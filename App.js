@@ -17,7 +17,7 @@ export default class App extends React.Component {
       gifCounter: 0,
       jpgCounter: 0,
       mp4Counter: 0,
-      toInclude: ['.gif', '.jpg'],
+      toInclude: ['.gif', '.jpg', '.png', '.mp4'],
     }
 
     this.setTheState = this.setTheState.bind(this);
@@ -36,6 +36,7 @@ export default class App extends React.Component {
   async getNavOptions() {
     let options = await GoFetch('GET', '/personal/directory', true);
     console.log('options', options)
+    options.push('movies');
     options.push('controls');
     options.push('refresh');
     this.setState({

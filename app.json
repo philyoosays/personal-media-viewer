@@ -1,5 +1,15 @@
 {
   "expo": {
-    "sdkVersion": "27.0.0"
+    "name": "Helios Media Player",
+    "icon": "./assets/icon/fun-go-08-512.png",
+    "version": "0.1.0",
+    "sdkVersion": "27.0.0",
+    "slug": "mediaviewer",
+    "ios": {
+      "bundleIdentifier": "localhost.@philyoosays.heliosmedia"
+    },
+    "android": {
+      "package": "localhost.@philyoosays.heliosmedia"
+    }
   }
 }

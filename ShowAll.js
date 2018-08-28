@@ -1,6 +1,8 @@
 import React from 'react';
-import { StyleSheet, View, Image, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, TouchableWithoutFeedback, Image, Dimensions } from 'react-native';
 import { Video } from 'expo';
+
+import ImageViewer from './ImageViewer';
 
 export default class ShowAll extends React.Component {
   constructor(props) {
@@ -9,26 +11,36 @@ export default class ShowAll extends React.Component {
       toRender: [],
       gifToJpg: 2,
       current: '',
-      server: 'http://192.168.1.4:6002/'
+      server: 'http://192.168.1.4:6002',
+      slideInterval: '',
     }
   }
 
   componentDidMount() {
-
+    // let interval = setInterval(() => {
+    //   this.cycle()
+    // }, 5000)
+    // this.setState({
+    //   slideInterval: interval
+    // })
   }
 
   async componentDidUpdate(prevProps, prevState) {
     if(this.props.hash !== undefined && this.props.hash !== prevProps.hash) {
       let includeList = this.props.toInclude.map(d => d.slice(1));
-      if(this.props.jpgCounter) {
+      if(this.props.hash) {
         let mediaList = Object.keys(this.props.hash);
-        this.randomizer(mediaList)
+        // mediaList = await this.randomizer(mediaList)
         await this.setState({
           toRender: mediaList
         })
         this.cycle()
       }
     }
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.slideInterval);
   }
 
   cycle() {
@@ -39,6 +51,10 @@ export default class ShowAll extends React.Component {
       toRender: media,
       current: current
     })
+  }
+
+  handleClick(e) {
+    console.log(e)
   }
 
   howManyTimes() {
@@ -62,39 +78,85 @@ export default class ShowAll extends React.Component {
   }
 
   randomizer(obj) {
-    let media = this.state.toRender.slice();
+    let media = obj.slice();
     for(let i = 0; i < media.length; i++) {
-      let rand = 0;
+      let rand = Math.floor(Math.random() * media.length);
       while(rand === i) {
         rand = Math.floor(Math.random() * media.length);
       }
+      console.log("rand", rand)
       let temp = media[i];
       media[i] = media[rand];
       media[rand] = temp;
     }
+    return media;
   }
 
-  toShow() {
-    let uri;
-      console.log(this.state.current.slice(0,3) === 'jpg')
-    switch(this.state.current) {
-      case this.state.current.slice(0, 3) === 'jpg':
-        uri = this.stateserver + this.props.currentDir + this.props.hash[this.state.current];
-        return <Image source={{uri}} style={{borderWidth: 2}}/>
-        break;
-      default:
-        break;
-    }
-  }
+  // toShow() {
+  //   let uri;
+  //     console.log(this.state.current.slice(0,3) === 'jpg')
+  //   switch(this.state.current) {
+  //     case this.state.current.slice(0, 3) === 'jpg':
+  //       uri = this.stateserver + this.props.currentDir + this.props.hash[this.state.current];
+  //       return <Image source={{uri}} style={{borderWidth: 2}}/>
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }
 
   render() {
 
-    const toRender = this.toShow()
-    console.log(toRender)
+    // const toRender = this.toShow()
+
+    let uri;
+    let toRender = undefined;
+    if(this.state.current !== '') {
+      uri = this.state.server + '/' + this.props.currentDir + '/' + this.props.hash[this.state.current];
+      switch(this.state.current.slice(0, 3)) {
+        case 'png':
+        case 'jpg':
+          toRender = <ImageViewer
+                        styles={ styles }
+                        handleClick={ this.handleClick }
+                        uri={ uri }
+                      />
+          setTimeout(() => {
+            this.cycle();
+          }, 3000)
+          break;
+        case 'gif':
+          toRender = <ImageViewer
+                        styles={ styles }
+                        handleClick={ this.handleClick }
+                        uri={ uri }
+                      />
+          setTimeout(() => {
+            this.cycle()
+          }, 12000)
+          break;
+        case 'mp4':
+          toRender = <Video
+                        source={{ uri: uri }}
+                        resizeMode="contain"
+                        shouldPlay
+                        isLooping
+                        style={ styles.image }
+                      />
+          setTimeout(() => {
+            this.cycle()
+          }, 12000)
+          break;
+        default:
+          break;
+      }
+    }
+
 
     return(
       <View style={ styles.display }>
-        { toRender }
+        <Text>{ this.state.current.split('.')[this.state.current.split('.').length - 1] }</Text>
+        {toRender}
       </View>
     );
   }
@@ -102,13 +164,16 @@ export default class ShowAll extends React.Component {
 
 const { width } = Dimensions.get('window');
 
-let targetWidth = width * (2/3);
+let targetWidth = width * .95;
 
 const styles = StyleSheet.create({
   display: {
-    width: targetWidth,
-    height: 'auto',
-    borderWidth: 2,
-    borderColor: 'white'
+    width: width,
+    height: '85%',
+    position: 'relative',
+    top: 60
+  },
+  image: {
+    height: '100%'
   }
 })
